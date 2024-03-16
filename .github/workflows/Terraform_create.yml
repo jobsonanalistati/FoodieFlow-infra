@@ -1,0 +1,75 @@
+name: 'Terraform CI'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+  
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.tf'
+  
+  workflow_dispatch:
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+
+    - name: Terraform Show
+      run: terraform show
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Terraform Plan
+      id: plan
+      run: terraform plan -no-color
+      continue-on-error: true
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    - name: Show Plan
+      if: github.event_name == 'pull_request'
+      run: |
+        echo "#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`"
+        echo "#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`"
+        echo "#### Terraform Plan 📖\`${{ steps.plan.outcome }}\`"
+        echo "<details><summary>Show Plan</summary>"
+        echo "\`\`\`${{ steps.plan.outputs.stdout }}\`\`\`"
+        echo "</details>"
+        echo "*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*"
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
