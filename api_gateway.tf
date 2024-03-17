@@ -1,55 +1,130 @@
-resource "aws_api_gateway_rest_api" "foodieflow" {
-  name        = "foodieflow"
-  description = "API for foodieflow application"
+resource "aws_api_gateway_rest_api" "foodieflow_api" {
+  name        = "foodieflow-tf"
+  description = "API Gateway for FoodieFlow"
+  body        = <<API
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "foodieflow-tf",
+    "version": "2024-03-16 10:41:05UTC"
+  },
+  "servers": [
+    {
+      "url": "https://8080/{basePath}",
+      "variables": {
+        "basePath": {
+          "default": ""
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/categorias": {
+      "x-amazon-apigateway-any-method": {
+        "responses": {
+          "default": {
+            "description": "Default response for ANY /categorias"
+          }
+        },
+        "security": [
+          {
+            "jwt-validator": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "payloadFormatVersion": "1.0",
+          "type": "http_proxy",
+          "httpMethod": "ANY",
+          "uri": "https://8080/categorias/",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 30000
+        }
+      }
+    },
+    "/clientes": {
+      "x-amazon-apigateway-any-method": {
+        "responses": {
+          "default": {
+            "description": "Default response for ANY /clientes"
+          }
+        },
+        "security": [
+          {
+            "jwt-validator": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "payloadFormatVersion": "1.0",
+          "type": "http_proxy",
+          "httpMethod": "ANY",
+          "uri": "https://8080/clientes/",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 30000
+        }
+      }
+    },
+    "/pedidos": {
+      "x-amazon-apigateway-any-method": {
+        "responses": {
+          "default": {
+            "description": "Default response for ANY /pedidos"
+          }
+        },
+        "security": [
+          {
+            "jwt-validator": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "payloadFormatVersion": "1.0",
+          "type": "http_proxy",
+          "httpMethod": "ANY",
+          "uri": "https://8080/pedidos/",
+          "connectionType": "INTERNET",
+          "timeoutInMillis": 30000
+        }
+      }
+    },
+    "/produtos": {
+      "x-amazon-apigateway-any-method": {
+        "responses": {
+          "default": {
+            "description": "Default response for ANY /produtos"
+          }
+        },
+        "security": [
+          {
+            "jwt-validator": []
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "payloadFormatVersion": "1.0",
+          "type": "http_proxy",
+          "httpMethod": "ANY",
+          "uri": "https://8080/produtos/",
+          "connectionType": "INTERNET"
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "jwt-validator": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "x-amazon-apigateway-authorizer": {
+          "identitySource": "$request.header.Authorization",
+          "authorizerUri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:730335442495:function:jwt-validator/invocations",
+          "authorizerPayloadFormatVersion": "2.0",
+          "authorizerResultTtlInSeconds": 300,
+          "type": "request",
+          "enableSimpleResponses": false
+        }
+      }
+    }
+  },
+  "x-amazon-apigateway-importexport-version": "1.0"
 }
-
-# Crie uma variável para armazenar o conteúdo do diretório de rotas
-data "archive_file" "routes" {
-  type        = "zip"
-  source_dir  = "${path.module}/Routes"
-  output_path = "${path.module}/routes.zip"
-}
-
-# Crie um recurso de recurso para importar as rotas
-resource "aws_api_gateway_resource" "routes" {
-  rest_api_id = aws_api_gateway_rest_api.foodieflow.id
-  parent_id   = aws_api_gateway_rest_api.foodieflow.root_resource_id
-  path_part   = "Routes"
-}
-
-# Crie uma integração de lambda para importar as rotas
-resource "aws_api_gateway_integration" "routes_integration" {
-  rest_api_id             = aws_api_gateway_rest_api.foodieflow.id
-  resource_id             = aws_api_gateway_resource.routes.id
-  http_method             = "POST"
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${data.aws_caller_identity.current.account_id}:function:importRoutes/invocations"
-}
-
-# Anexe um método à rota de recursos para importar as rotas
-resource "aws_api_gateway_method" "routes_method" {
-  rest_api_id   = aws_api_gateway_rest_api.foodieflow.id
-  resource_id   = aws_api_gateway_resource.routes.id
-  http_method   = "POST"
-  authorization = "NONE"
-}
-
-# Associe a integração ao método
-resource "aws_api_gateway_integration_response" "routes_integration_response" {
-  rest_api_id = aws_api_gateway_rest_api.foodieflow.id
-  resource_id = aws_api_gateway_resource.routes.id
-  http_method = aws_api_gateway_method.routes_method.http_method
-  status_code = aws_api_gateway_method.routes_method.http_method == "POST" ? "200" : "400"
-
-  response_templates = {
-    "application/json" = jsonencode({
-      message = "Routes imported successfully"
-    })
-  }
-}
-
-# Crie uma saída para a URL da API Gateway
-output "api_gateway_endpoint" {
-  value = aws_api_gateway_rest_api.foodieflow.invoke_url
+API
 }
