@@ -21,14 +21,6 @@ output "aws_lambda_function_tfer--pre-002D-signup-002D-new_id" {
   value = aws_lambda_function.tfer--pre-002D-signup-002D-new.id
 }
 
-output "aws_lambda_function_tfer--pre-002D-signup-002D-zip_id" {
-  value = aws_lambda_function.tfer--pre-002D-signup-002D-zip.id
-}
-
-output "aws_lambda_function_tfer--pre-002D-signup_id" {
-  value = aws_lambda_function.tfer--pre-002D-signup.id
-}
-
 output "aws_lambda_function_tfer--verify-002D-auth-002D-challenge_id" {
   value = aws_lambda_function.tfer--verify-002D-auth-002D-challenge.id
 }
