@@ -91,37 +91,6 @@ resource "aws_lambda_function" "tfer--jwt-002D-validator" {
   }
 }
 
-resource "aws_lambda_function" "tfer--pre-002D-signup" {
-  s3_bucket     = "lambda-foodieflow"
-  s3_key        = "pre-signup-zip-67a5b6c8-4835-4ed3-a289-7137d4a34e1e.zip"
-  architectures = ["x86_64"]
-
-  ephemeral_storage {
-    size = "512"
-  }
-
-  function_name = "pre-signup"
-  handler       = "lambda_function.lambda_handler"
-
-  logging_config {
-    log_format = "Text"
-    log_group  = "/aws/lambda/pre-signup"
-  }
-
-  memory_size                    = "128"
-  package_type                   = "Zip"
-  reserved_concurrent_executions = "-1"
-  role                           = "arn:aws:iam::730335442495:role/service-role/pre-signup-role-6q4osfie"
-  runtime                        = "python3.12"
-  skip_destroy                   = "false"
-  source_code_hash               = "Rgz1UthfsojMKL6KA1UcCRfHJD/DrvJ6i234LQL/wHI="
-  timeout                        = "3"
-
-  tracing_config {
-    mode = "PassThrough"
-  }
-}
-
 resource "aws_lambda_function" "tfer--pre-002D-signup-002D-new" {
   s3_bucket     = "lambda-foodieflow"
   s3_key        = "pre-signup-new-42ae4e8d-270e-4ccd-bf8c-0bbdf3119675.zip"
@@ -147,38 +116,6 @@ resource "aws_lambda_function" "tfer--pre-002D-signup-002D-new" {
   runtime                        = "python3.12"
   skip_destroy                   = "false"
   source_code_hash               = "pwR4Brtc/nLhVvFgo0aIItArdm0I0uAwsVbEnwoUec0="
-  timeout                        = "3"
-
-  tracing_config {
-    mode = "PassThrough"
-  }
-}
-
-resource "aws_lambda_function" "tfer--pre-002D-signup-002D-zip" {
-  s3_bucket     = "lambda-foodieflow"
-  s3_key        = "pre-signup-f6c5e86c-11e7-46ed-94da-b7f435eb16a1.zip"
-  architectures = ["x86_64"]
-
-  ephemeral_storage {
-    size = "512"
-  }
-
-  function_name = "pre-signup-zip"
-  handler       = "lambda_function.lambda_handler"
-  layers        = ["arn:aws:lambda:us-east-1:730335442495:layer:venv-layer:1"]
-
-  logging_config {
-    log_format = "Text"
-    log_group  = "/aws/lambda/pre-signup-zip"
-  }
-
-  memory_size                    = "128"
-  package_type                   = "Zip"
-  reserved_concurrent_executions = "-1"
-  role                           = "arn:aws:iam::730335442495:role/service-role/pre-signup-zip-role-xwtq5fdw"
-  runtime                        = "python3.12"
-  skip_destroy                   = "false"
-  source_code_hash               = "xgEcZ5m0zScz9ZGRw7VTDUKVcjtb3kMQWu4WHAKtzJc="
   timeout                        = "3"
 
   tracing_config {
