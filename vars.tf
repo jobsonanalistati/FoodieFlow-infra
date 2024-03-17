@@ -5,5 +5,5 @@ variable "regionDefault" {
 
 variable "projectName" {
   default     = "foodieflow"
-  description = "project name"
+  description = "project name" 
 }
