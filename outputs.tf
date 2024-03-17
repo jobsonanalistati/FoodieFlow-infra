@@ -3,7 +3,7 @@ output "aws_cognito_user_pool_tfer--foodieflow-002D-users_id" {
 }
 
 output "aws_cognito_user_pool_tfer--foodieflow_id" {
-  value = "teste-${aws_cognito_user_pool.tfer--foodieflow.id}"
+  value = aws_cognito_user_pool.tfer--foodieflow.id
 }
 output "aws_lambda_function_tfer--create-002D-auth-002D-challenge_id" {
   value = aws_lambda_function.tfer--create-002D-auth-002D-challenge.id
