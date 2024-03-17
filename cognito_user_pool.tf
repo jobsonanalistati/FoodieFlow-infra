@@ -11,7 +11,7 @@ resource "aws_cognito_user_pool" "tfer--foodieflow" {
   }
 
   alias_attributes    = ["email", "preferred_username"]
-  deletion_protection = "ACTIVE"
+  deletion_protection = "INACTIVE"
 
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
@@ -57,7 +57,7 @@ resource "aws_cognito_user_pool" "tfer--foodieflow-002D-users" {
     allow_admin_create_user_only = "false"
   }
 
-  deletion_protection = "ACTIVE"
+  deletion_protection = "INACTIVE"
 
   email_configuration {
     email_sending_account = "COGNITO_DEFAULT"
