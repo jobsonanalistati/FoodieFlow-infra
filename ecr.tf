@@ -4,7 +4,7 @@ resource "aws_ecr_repository" "repository" {
 }
 
 resource "aws_ecr_repository_policy" "policy-ecr" {
-  repository = aws_ecr_repository.policy-ecr.name
+  repository = aws_ecr_repository.repository.name
 
   policy = jsonencode({
     Version = "2008-10-17",
