@@ -7,7 +7,7 @@ module "eks" {
   cluster_endpoint_public_access = true
 
   enable_cluster_creator_admin_permissions = true
-  
+
   subnet_ids                     = module.vpc.public_subnets
   vpc_id                         = module.vpc.vpc_id
 
@@ -19,7 +19,7 @@ module "eks" {
       max_size     = 5
       desired_size = 2
 
-      # Configurando a política de segurança para permitir tráfego na porta 8080
+      # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
           description       = "Allow incoming traffic on port 8080"
