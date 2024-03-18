@@ -24,3 +24,8 @@ output "aws_lambda_function_tfer--pre-002D-signup-002D-new_id" {
 output "aws_lambda_function_tfer--verify-002D-auth-002D-challenge_id" {
   value = aws_lambda_function.tfer--verify-002D-auth-002D-challenge.id
 }
+
+output "cluster_endpoint" {
+  value       = module.eks.cluster_endpoint
+  description = "The endpoint of the EKS cluster"
+}
