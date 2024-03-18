@@ -1,9 +1,13 @@
-resource "aws_secretsmanager_secret" "foodieFlow_secret" {
-  name = "foodieFlow_secret"
+data "aws_secretsmanager_secret" "foodieFlow_secrets" {
+  name = "foodieFlow_secrets"
 }
 
-resource "aws_secretsmanager_secret_version" "foodieFlow_secret" {
-  secret_id = aws_secretsmanager_secret.foodieFlow_secret.id
+data "aws_secretsmanager_secret_version" "foodieFlow_secrets" {
+  secret_id = data.aws_secretsmanager_secret.foodieFlow_secret.id
+}
+
+resource "aws_secretsmanager_secret_version" "foodieFlow_secrets" {
+  secret_id = data.aws_secretsmanager_secret.foodieFlow_secret.id
   secret_string = jsonencode(merge(try(jsondecode(data.aws_secretsmanager_secret_version.foodieFlow_secret.secret_string), {}), {
     pool      = aws_cognito_user_pool.tfer--foodieflow.id,
     client_id = aws_cognito_user_pool_client.client.id
