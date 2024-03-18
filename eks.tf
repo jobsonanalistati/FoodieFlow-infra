@@ -5,9 +5,7 @@ module "eks" {
   cluster_name                   = "cluster-eks-${var.projectName}"
   cluster_version                = "1.29"
   cluster_endpoint_public_access = true
-
   enable_cluster_creator_admin_permissions = true
-
   subnet_ids                     = module.vpc.public_subnets
   vpc_id                         = module.vpc.vpc_id
 
