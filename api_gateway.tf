@@ -30,7 +30,7 @@ resource "aws_api_gateway_rest_api" "foodieflow_api" {
             "payloadFormatVersion" : "2.0",
             "type" : "http_proxy",
             "httpMethod" : "ANY",
-            "uri" : "http://9ce7-189-111-103-206.ngrok-free.app:8080/categorias/",
+            "uri" : "${module.eks.cluster_endpoint}/categorias/",
             "connectionType" : "INTERNET",
             "timeoutInMillis" : 29000
           }
@@ -48,7 +48,7 @@ resource "aws_api_gateway_rest_api" "foodieflow_api" {
             "payloadFormatVersion" : "2.0",
             "type" : "http_proxy",
             "httpMethod" : "ANY",
-            "uri" : "http://9ce7-189-111-103-206.ngrok-free.app:8080/clientes/",
+            "uri" : "${module.eks.cluster_endpoint}/clientes/",
             "connectionType" : "INTERNET",
             "timeoutInMillis" : 29000
           }
@@ -66,7 +66,7 @@ resource "aws_api_gateway_rest_api" "foodieflow_api" {
             "payloadFormatVersion" : "2.0",
             "type" : "http_proxy",
             "httpMethod" : "ANY",
-            "uri" : "http://9ce7-189-111-103-206.ngrok-free.app:8080/pedidos/",
+            "uri" : "${module.eks.cluster_endpoint}/pedidos/",
             "connectionType" : "INTERNET",
             "timeoutInMillis" : 29000
           }
@@ -84,7 +84,7 @@ resource "aws_api_gateway_rest_api" "foodieflow_api" {
             "payloadFormatVersion" : "2.0",
             "type" : "http_proxy",
             "httpMethod" : "ANY",
-            "uri" : "http://9ce7-189-111-103-206.ngrok-free.app:8080/produtos/",
+            "uri" : "${module.eks.cluster_endpoint}/produtos/",
             "connectionType" : "INTERNET",
             "timeoutInMillis" : 29000
           }

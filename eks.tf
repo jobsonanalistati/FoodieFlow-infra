@@ -2,11 +2,12 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.5"
 
-  cluster_name                   = "cluster-eks-${var.projectName}"
-  cluster_version                = "1.29"
-  cluster_endpoint_public_access = true
-  subnet_ids                     = module.vpc.public_subnets
-  vpc_id                         = module.vpc.vpc_id
+  cluster_name                             = "cluster-eks-${var.projectName}"
+  cluster_version                          = "1.29"
+  cluster_endpoint_public_access           = true
+  enable_cluster_creator_admin_permissions = true
+  subnet_ids                               = module.vpc.public_subnets
+  vpc_id                                   = module.vpc.vpc_id
 
   eks_managed_node_groups = {
     initial = {
@@ -16,7 +17,7 @@ module "eks" {
       max_size     = 5
       desired_size = 2
 
-      # Configurando a política de segurança para permitir tráfego na porta 8080
+      # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
           description       = "Allow incoming traffic on port 8080"
