@@ -7,5 +7,3 @@ variable "projectName" {
   default     = "foodieflow"
   description = "project name"
 }
-
-variable "instance_types" {}
