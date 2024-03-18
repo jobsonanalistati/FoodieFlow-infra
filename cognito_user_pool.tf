@@ -105,3 +105,11 @@ resource "aws_cognito_user_pool" "tfer--foodieflow-002D-users" {
     default_email_option = "CONFIRM_WITH_CODE"
   }
 }
+
+resource "aws_cognito_user_pool_client" "client" {
+  name                          = "foodieFlowClient"
+  user_pool_id                  = aws_cognito_user_pool.tfer--foodieflow.id
+  generate_secret               = false
+  prevent_user_existence_errors = "ENABLED"
+  refresh_token_validity        = 30
+}
