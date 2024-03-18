@@ -1,7 +1,3 @@
-output "aws_cognito_user_pool_tfer--foodieflow-002D-users_id" {
-  value = aws_cognito_user_pool.tfer--foodieflow-002D-users.id
-}
-
 output "aws_cognito_user_pool_tfer--foodieflow_id" {
   value = aws_cognito_user_pool.tfer--foodieflow.id
 }
