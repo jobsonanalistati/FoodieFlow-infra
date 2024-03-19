@@ -17,7 +17,7 @@ module "eks" {
       max_size     = 5
       desired_size = 2
 
-      # Configurando a política de segurança para permitir tráfego na porta 8080
+      # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
           description       = "Allow incoming traffic on port 8080"
