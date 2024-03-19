@@ -2,7 +2,7 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.8"
 
-  cluster_name                             = "cluster-eks-${var.projectName}"
+  cluster_name                             = "cluster-eks-${var.projectName}-app"
   cluster_version                          = "1.29"
   cluster_endpoint_public_access           = true
   enable_cluster_creator_admin_permissions = true
@@ -92,9 +92,9 @@ resource "helm_release" "secrets-provider-aws" {
   ]
 }
 
-resource "kubernetes_namespace_v1" "foodieflow_namespace" {
+resource "kubernetes_namespace_v1" "foodieflow_namespace_app" {
   metadata {
-    name = "foodieflow_namespace"
+    name = "foodieflow_namespace_app"
   }
 
   depends_on = [
