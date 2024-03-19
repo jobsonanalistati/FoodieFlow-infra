@@ -1,44 +1,3 @@
-resource "aws_iam_policy" "secretsmanager_getsecretvalue" {
-  name        = "secretsmanager_getsecretvalue"
-  description = "Permite a ação secretsmanager:GetSecretValue"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect   = "Allow",
-        Action   = "secretsmanager:GetSecretValue",
-        Resource = "${data.aws_secretsmanager_secret.foodieFlow_secrets.arn}"
-      }
-    ]
-  })
-}
-
-
-resource "aws_iam_role" "eks_role" {
-  name = "eks_role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Action = "sts:AssumeRole",
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        },
-        Effect = "Allow",
-        Sid    = ""
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "attach_policy_to_role" {
-  role       = aws_iam_role.eks_role.name
-  policy_arn = aws_iam_policy.secretsmanager_getsecretvalue.arn
-}
-
-
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.5"
@@ -50,17 +9,17 @@ module "eks" {
   subnet_ids                               = module.vpc.public_subnets
   vpc_id                                   = module.vpc.vpc_id
 
-  node_groups = {
-    eks_nodes = {
-      desired_capacity = 2
-      max_capacity     = 5
-      min_capacity     = 1
+  eks_managed_node_groups = {
+    initial = {
+      instance_types = ["t2.micro"]
 
-      instance_type = "t2.micro"
-      key_name      = var.key_name
+      min_size     = 1
+      max_size     = 5
+      desired_size = 2
 
       iam_role_id = aws_iam_role.eks_role.id
 
+      # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
           description       = "Allow incoming traffic on port 8080"
@@ -76,4 +35,109 @@ module "eks" {
       ]
     }
   }
+}
+
+module "eks_blueprints_addons" {
+  source  = "aws-ia/eks-blueprints-addons/aws"
+  version = "~> 1.16"
+
+  cluster_name      = module.eks.cluster_name
+  cluster_endpoint  = module.eks.cluster_endpoint
+  cluster_version   = module.eks.cluster_version
+  oidc_provider_arn = module.eks.oidc_provider_arn
+
+  enable_metrics_server = true
+
+  depends_on = [
+    module.eks
+  ]
+}
+
+################################################################################
+# Helm packages
+################################################################################
+
+resource "helm_release" "csi-secrets-store" {
+  name       = "csi-secrets-store"
+  repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
+  chart      = "secrets-store-csi-driver"
+  namespace  = "kube-system"
+
+  set {
+    name  = "syncSecret.enabled"
+    value = "true"
+  }
+  set {
+    name  = "enableSecretRotation"
+    value = "true"
+  }
+
+  depends_on = [
+    module.eks,
+    module.eks_blueprints_addons
+  ]
+}
+
+resource "helm_release" "secrets-provider-aws" {
+  name       = "secrets-provider-aws"
+  repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
+  chart      = "secrets-store-csi-driver-provider-aws"
+  namespace  = "kube-system"
+
+  depends_on = [
+    module.eks,
+    module.eks_blueprints_addons,
+    helm_release.csi-secrets-store
+  ]
+}
+
+################################################################################
+# Namespaces
+################################################################################
+
+# Declare o(s) namespaces caso deseje que o Terraform exclua os Services, 
+# e consequentemente os Load Balancers atrelados a eles, ao fazer "terraform destroy"
+
+resource "kubernetes_namespace_v1" "eks_namespace" {
+  metadata {
+    name = var.app_namespace
+  }
+
+  depends_on = [
+    module.eks
+  ]
+}
+
+################################################################################
+# Supporting Resources
+################################################################################
+
+# Configuração de uma conta de serviço do Kubernetes para assumir um perfil do IAM
+# Todos os Pods configurados para usar a conta de serviço podem então acessar quaisquer AWS service (Serviço da AWS) para os quais a função tenha permissões de acesso.
+# https://docs.aws.amazon.com/pt_br/eks/latest/userguide/associate-service-account-role.html
+
+resource "aws_iam_role" "serviceaccount_role" {
+  name = "aws-iam-serviceaccount-role"
+
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:aud" : "sts.amazonaws.com",
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:${var.app_namespace}:${var.serviceaccount_name}"
+          }
+        }
+      },
+    ]
+  })
+
 }
