@@ -17,7 +17,7 @@ module "eks" {
 
   eks_managed_node_groups = {
     initial = {
-      instance_types = ["t2.micro"]
+      instance_types = ["t3.small"]
 
       min_size     = 1
       max_size     = 5
@@ -100,4 +100,28 @@ resource "kubernetes_namespace_v1" "foodieflownamespace" {
   depends_on = [
     module.eks
   ]
+}
+
+resource "aws_iam_role" "serviceaccount_role" {
+  name = "aws-iam-serviceaccount-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:aud" : "sts.amazonaws.com",
+            "${module.eks.oidc_provider}:sub" : "system:serviceaccount:${var.app_namespace}:${var.serviceaccount_name}"
+          }
+        }
+      }
+    ]
+  })
+
 }
