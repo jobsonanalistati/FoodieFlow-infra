@@ -57,6 +57,18 @@ module "eks_blueprints_addons" {
   ]
 }
 
+resource "helm_release" "metrics_server" {
+  name       = "metrics-server"
+  repository = "https://charts.bitnami.com/bitnami"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+
+  depends_on = [
+    module.eks,
+    module.eks_blueprints_addons
+  ]
+}
+
 resource "helm_release" "csi-secrets-store" {
   name       = "csi-secrets-store"
   repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
@@ -110,7 +122,7 @@ resource "aws_iam_role" "serviceaccount_role" {
             "${module.eks.oidc_provider}:sub" : "system:serviceaccount:${var.app_namespace}:${var.serviceaccount_name}"
           }
         }
-      },
+      }
     ]
   })
 
