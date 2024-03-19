@@ -1,7 +1,3 @@
-data "aws_secretsmanager_secret" "foodieFlow" {
-  name = "foodieFlow"
-}
-
 resource "aws_iam_policy" "secretsmanager_getsecretvalue" {
   name        = "secretsmanager_getsecretvalue"
   description = "Permite a ação secretsmanager:GetSecretValue"
@@ -12,7 +8,7 @@ resource "aws_iam_policy" "secretsmanager_getsecretvalue" {
       {
         Effect   = "Allow",
         Action   = "secretsmanager:GetSecretValue",
-        Resource = "${data.aws_secretsmanager_secret.foodieFlow_secrets.arn}"
+        Resource = "${data.aws_secretsmanager_secret.foodieFlow.arn}"
       }
     ]
   })
