@@ -44,9 +44,9 @@ module "eks" {
     initial = {
       instance_types = ["t3.small"]
 
-      min_size       = 1
-      max_size       = 5
-      desired_size   = 2
+      min_size     = 1
+      max_size     = 5
+      desired_size = 2
 
 
       additional_security_group_rules = [
