@@ -1,13 +1,54 @@
+provider "aws" {
+  region = local.region
+}
+
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    # This requires the awscli to be installed locally where Terraform is executed
+    args = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      # This requires the awscli to be installed locally where Terraform is executed
+      args = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    }
+  }
+}
+
+locals {
+  name   = "rms-prd-k8scluster"
+  region = var.region
+  tags   = var.tags
+}
+
+################################################################################
+# Cluster
+################################################################################
+
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.8"
+  version = "~> 20.8"
 
-  cluster_name                             = "cluster-eks-${var.projectName}-app"
-  cluster_version                          = "1.29"
-  cluster_endpoint_public_access           = true
+  cluster_name                   = local.name
+  cluster_version                = "1.29"
+  cluster_endpoint_public_access = true
+
+  # Give the Terraform identity admin access to the cluster
+  # which will allow resources to be deployed into the cluster
   enable_cluster_creator_admin_permissions = true
-  subnet_ids                               = module.vpc.public_subnets
-  vpc_id                                   = module.vpc.vpc_id
 
   cluster_addons = {
     coredns    = {}
@@ -15,31 +56,31 @@ module "eks" {
     vpc-cni    = {}
   }
 
+  vpc_id     = var.vpc_id
+  subnet_ids = var.private_subnets
+
   eks_managed_node_groups = {
-    initial = {
-      instance_types = ["t2.micro"]
+    default = {
+      instance_types = ["t3.small"] # A instance_type do Free Tier é t2.micro
 
+      # min_size     = 2
+      # max_size     = 10
+      # desired_size = 2
       min_size     = 1
-      max_size     = 5
-      desired_size = 2
-
-      # Configurando a política de segurança para permitir tráfego na porta 8080 
-      additional_security_group_rules = [
-        {
-          description       = "Allow incoming traffic on port 8080"
-          from_port         = 8080
-          to_port           = 8080
-          protocol          = "tcp"
-          cidr_blocks       = ["0.0.0.0/0"]
-          ipv6_cidr_blocks  = []
-          prefix_list_ids   = []
-          security_group_id = null
-          self              = false
-        }
-      ]
+      max_size     = 3
+      desired_size = 1
     }
   }
+
+  tags = local.tags
 }
+
+################################################################################
+# EKS Blueprints Addons
+################################################################################
+
+# Terraform module which provisions addons on Amazon EKS clusters
+# https://registry.terraform.io/modules/aws-ia/eks-blueprints-addons/aws/latest
 
 module "eks_blueprints_addons" {
   source  = "aws-ia/eks-blueprints-addons/aws"
@@ -52,10 +93,20 @@ module "eks_blueprints_addons" {
 
   enable_metrics_server = true
 
+  tags = local.tags
+
   depends_on = [
     module.eks
   ]
 }
+
+################################################################################
+# Helm packages
+################################################################################
+
+# Use AWS Secrets Manager secrets in Amazon Elastic Kubernetes Service
+# install the Secrets Store CSI Driver and ASCP
+# https://docs.aws.amazon.com/secretsmanager/latest/userguide/integrating_csi_driver.html#integrating_csi_driver_install
 
 resource "helm_release" "csi-secrets-store" {
   name       = "csi-secrets-store"
@@ -63,6 +114,8 @@ resource "helm_release" "csi-secrets-store" {
   chart      = "secrets-store-csi-driver"
   namespace  = "kube-system"
 
+  # Optional Values
+  # See https://secrets-store-csi-driver.sigs.k8s.io/getting-started/installation.html#optional-values
   set {
     name  = "syncSecret.enabled"
     value = "true"
@@ -78,7 +131,6 @@ resource "helm_release" "csi-secrets-store" {
   ]
 }
 
-
 resource "helm_release" "secrets-provider-aws" {
   name       = "secrets-provider-aws"
   repository = "https://aws.github.io/secrets-store-csi-driver-provider-aws"
@@ -92,9 +144,16 @@ resource "helm_release" "secrets-provider-aws" {
   ]
 }
 
-resource "kubernetes_namespace_v1" "foodieflow_namespace_app" {
+################################################################################
+# Namespaces
+################################################################################
+
+# Declare o(s) namespaces caso deseje que o Terraform exclua os Services, 
+# e consequentemente os Load Balancers atrelados a eles, ao fazer "terraform destroy"
+
+resource "kubernetes_namespace_v1" "rms" {
   metadata {
-    name = "foodieflow_namespace_app"
+    name = var.app_namespace
   }
 
   depends_on = [
@@ -102,9 +161,19 @@ resource "kubernetes_namespace_v1" "foodieflow_namespace_app" {
   ]
 }
 
+################################################################################
+# Supporting Resources
+################################################################################
+
+# Configuração de uma conta de serviço do Kubernetes para assumir um perfil do IAM
+# Todos os Pods configurados para usar a conta de serviço podem então acessar quaisquer AWS service (Serviço da AWS) para os quais a função tenha permissões de acesso.
+# https://docs.aws.amazon.com/pt_br/eks/latest/userguide/associate-service-account-role.html
+
 resource "aws_iam_role" "serviceaccount_role" {
   name = "aws-iam-serviceaccount-role"
 
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -120,8 +189,31 @@ resource "aws_iam_role" "serviceaccount_role" {
             "${module.eks.oidc_provider}:sub" : "system:serviceaccount:${var.app_namespace}:${var.serviceaccount_name}"
           }
         }
-      }
+      },
     ]
   })
 
+  tags = local.tags
 }
+
+# NOTAS
+
+# Baseado no tutorial "Provision an EKS cluster (AWS)" do portal HashiCorp Developer em 
+# https://developer.hashicorp.com/terraform/tutorials/kubernetes/eks 
+# https://github.com/hashicorp/learn-terraform-provision-eks-cluster/blob/main/main.tf 
+# e no Istio pattern Blueprint do projeto "Amazon EKS Blueprints for Terraform" em 
+# https://github.com/aws-ia/terraform-aws-eks-blueprints/tree/main/patterns/istio
+
+# A documentação do Istio em https://istio.io/latest/docs/setup/platform-setup/amazon-eks/ 
+# recomenda a instação do Istio no EKS da AWS através do "EKS Blueprints for Istio" do projeto "Amazon EKS Blueprints for Terraform", disponível em 
+# https://github.com/aws-ia/terraform-aws-eks-blueprints/tree/main/patterns/istio
+
+# SOLUÇÃO DE PROBLEMAS
+
+# Caso der erro 
+# "Error: deleting EC2 Internet Gateway (igw-???): detaching EC2 Internet Gateway (igw-???) from VPC (vpc-???): DependencyViolation: Network vpc-??? has some mapped public address(es). Please unmap those public address(es) before detaching the gateway."
+# ao fazer 'terraform destroy' acesse https://us-east-1.console.aws.amazon.com/ec2/home#LoadBalancers e exclua o Load Balancer manualmente através do console da AWS ou da AWS CLI e tente executar 'terraform destroy' novamente.
+
+# Caso der erro 
+# "Error: deleting EC2 VPC (vpc-0f61381943c87ae59): operation error EC2: DeleteVpc, https response error StatusCode: 400, RequestID: b3cf023b-67f2-4421-b73c-a9604de5b9ab, api error DependencyViolation: The vpc 'vpc-0f61381943c87ae59' has dependencies and cannot be deleted."
+# ao fazer 'terraform destroy' acesse https://us-east-1.console.aws.amazon.com/vpcconsole/home#vpcs e exclua a VPC manualmente através do console da AWS ou da AWS CLI e tente executar 'terraform destroy' novamente.
