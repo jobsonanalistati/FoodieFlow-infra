@@ -17,8 +17,6 @@ module "eks" {
       max_size     = 5
       desired_size = 2
 
-      iam_role_id = aws_iam_role.eks_role.id
-
       # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
