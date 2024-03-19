@@ -50,17 +50,17 @@ module "eks" {
   subnet_ids                               = module.vpc.public_subnets
   vpc_id                                   = module.vpc.vpc_id
 
-  node_groups = {
-    eks_nodes = {
-      desired_capacity = 2
-      max_capacity     = 5
-      min_capacity     = 1
+  eks_managed_node_groups = {
+    initial = {
+      instance_types = ["t2.micro"]
 
-      instance_type = "t2.micro"
-      key_name      = var.key_name
+      min_size     = 1
+      max_size     = 5
+      desired_size = 2
 
       iam_role_id = aws_iam_role.eks_role.id
 
+      # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
         {
           description       = "Allow incoming traffic on port 8080"
