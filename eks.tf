@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.5"
+  version = "20.8"
 
   cluster_name                             = "cluster-eks-${var.projectName}"
   cluster_version                          = "1.29"
@@ -16,8 +16,6 @@ module "eks" {
       min_size     = 1
       max_size     = 5
       desired_size = 2
-
-      iam_role_id = aws_iam_role.eks_role.id
 
       # Configurando a política de segurança para permitir tráfego na porta 8080 
       additional_security_group_rules = [
@@ -91,16 +89,6 @@ resource "helm_release" "secrets-provider-aws" {
   ]
 }
 
-
-#resource "kubernetes_namespace_v1" "eks_namespace" {
-#  metadata {
-#    name = var.app_namespace
-#  }
-
-#  depends_on = [
-#    module.eks
-#  ]
-#}
 
 resource "aws_iam_role" "serviceaccount_role" {
   name = "aws-iam-serviceaccount-role"
