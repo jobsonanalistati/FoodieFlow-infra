@@ -13,7 +13,7 @@ module "vpc" {
   enable_dns_support   = true
   single_nat_gateway   = true
 
-  
+
 
   # Necessário no Kubernetes
   public_subnet_tags = {
