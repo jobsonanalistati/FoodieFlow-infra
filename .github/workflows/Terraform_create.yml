@@ -12,8 +12,8 @@ on:
       - main
     paths:
       - '**.tf'
-  
-  workflow_dispatch:
+
+  workflow_dispatch:      
 
 jobs:
   terraform:
@@ -28,33 +28,27 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup AWS CLI
-      run: |
-        curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
-        sudo ./aws/install --update
-    
-    - name: Clear AWS Credentials Cache
-      run: sudo rm -rf ~/.aws/cli/cache
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
     - name: Terraform Init
       id: init
       run: terraform init
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Terraform Format
       id: fmt
       run: terraform fmt -check
 
-    - name: Terraform Show
-      run: terraform show
-
     - name: Terraform Plan
       id: plan
       run: terraform plan -no-color
       continue-on-error: true
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Show Plan
       if: github.event_name == 'pull_request'
@@ -70,3 +64,6 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
