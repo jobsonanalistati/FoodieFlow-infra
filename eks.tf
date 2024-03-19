@@ -89,36 +89,20 @@ resource "helm_release" "secrets-provider-aws" {
   ]
 }
 
-################################################################################
-# Namespaces
-################################################################################
 
-# Declare o(s) namespaces caso deseje que o Terraform exclua os Services, 
-# e consequentemente os Load Balancers atrelados a eles, ao fazer "terraform destroy"
+#resource "kubernetes_namespace_v1" "eks_namespace" {
+#  metadata {
+#    name = var.app_namespace
+#  }
 
-resource "kubernetes_namespace_v1" "eks_namespace" {
-  metadata {
-    name = var.app_namespace
-  }
-
-  depends_on = [
-    module.eks
-  ]
-}
-
-################################################################################
-# Supporting Resources
-################################################################################
-
-# Configuração de uma conta de serviço do Kubernetes para assumir um perfil do IAM
-# Todos os Pods configurados para usar a conta de serviço podem então acessar quaisquer AWS service (Serviço da AWS) para os quais a função tenha permissões de acesso.
-# https://docs.aws.amazon.com/pt_br/eks/latest/userguide/associate-service-account-role.html
+#  depends_on = [
+#    module.eks
+#  ]
+#}
 
 resource "aws_iam_role" "serviceaccount_role" {
   name = "aws-iam-serviceaccount-role"
 
-  # Terraform's "jsonencode" function converts a
-  # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
