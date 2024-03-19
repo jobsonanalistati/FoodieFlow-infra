@@ -125,3 +125,8 @@ resource "aws_iam_role" "serviceaccount_role" {
   })
 
 }
+
+resource "aws_iam_role_policy_attachment" "eks_policy_attachment" {
+  role       = aws_iam_role.serviceaccount_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
