@@ -7,7 +7,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "terraform-foodieflow-db"
+    bucket = "terraform-foodieflow"
     key    = "api/terraform.tfstate"
     region = "us-east-1"
   }
