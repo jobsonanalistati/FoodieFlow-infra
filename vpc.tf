@@ -16,6 +16,5 @@ module "vpc" {
     "kubernetes.io/cluster/cluster-eks-${var.projectName}}" = "shared"
     "kubernetes.io/role/elb"                                = "1"
   }
-
   map_public_ip_on_launch = true
 }
