@@ -9,6 +9,12 @@ module "eks" {
   subnet_ids                               = module.vpc.public_subnets
   vpc_id                                   = module.vpc.vpc_id
 
+  cluster_addons = {
+    coredns    = {}
+    kube-proxy = {}
+    vpc-cni    = {}
+  }
+
   eks_managed_node_groups = {
     initial = {
       instance_types = ["t2.micro"]
@@ -50,10 +56,6 @@ module "eks_blueprints_addons" {
     module.eks
   ]
 }
-
-################################################################################
-# Helm packages
-################################################################################
 
 resource "helm_release" "csi-secrets-store" {
   name       = "csi-secrets-store"
