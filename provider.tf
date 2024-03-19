@@ -9,7 +9,7 @@ terraform {
   backend "s3" {
     bucket = "terraform-foodieflow"
     key    = "api/terraform.tfstate"
-    region = "us-east-1"
+    region = "us-east-2"
   }
 
   required_version = ">= 1.3"
