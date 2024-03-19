@@ -1,9 +1,4 @@
-data "aws_availability_zones" "available" {
-  filter {
-    name   = "opt-in-status"
-    values = ["opt-in-not-required"]
-  }
-}
+data "aws_availability_zones" "available" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -18,8 +13,8 @@ module "vpc" {
 
   enable_dns_hostnames = true
   enable_dns_support   = true
+  single_nat_gateway   = true
 
-  enable_nat_gateway = true
   single_nat_gateway = true
 
   # Necessário no Kubernetes
