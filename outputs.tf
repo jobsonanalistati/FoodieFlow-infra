@@ -1,7 +1,3 @@
-output "aws_cognito_user_pool_tfer--foodieflow-002D-users_id" {
-  value = aws_cognito_user_pool.tfer--foodieflow-002D-users.id
-}
-
 output "aws_cognito_user_pool_tfer--foodieflow_id" {
   value = aws_cognito_user_pool.tfer--foodieflow.id
 }
@@ -25,6 +21,7 @@ output "aws_lambda_function_tfer--verify-002D-auth-002D-challenge_id" {
   value = aws_lambda_function.tfer--verify-002D-auth-002D-challenge.id
 }
 
-output "aws_lambda_layer_version_tfer--arn-003A-aws-003A-lambda-003A-us-002D-east-002D-1-003A-730335442495-003A-layer-003A-venv-002D-layer-003A-1_id" {
-  value = aws_lambda_layer_version.tfer--arn-003A-aws-003A-lambda-003A-us-002D-east-002D-1-003A-730335442495-003A-layer-003A-venv-002D-layer-003A-1.id
-}
+#output "cluster_endpoint" {
+#  value       = module.eks.cluster_endpoint
+#  description = "The endpoint of the EKS cluster"
+#}
