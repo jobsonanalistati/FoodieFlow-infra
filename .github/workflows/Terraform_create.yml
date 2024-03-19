@@ -12,8 +12,8 @@ on:
       - main
     paths:
       - '**.tf'
-  
-  workflow_dispatch:
+
+  workflow_dispatch:      
 
 jobs:
   terraform:
@@ -42,13 +42,13 @@ jobs:
       id: fmt
       run: terraform fmt -check
 
-    - name: Terraform Show
-      run: terraform show
-
     - name: Terraform Plan
       id: plan
       run: terraform plan -no-color
       continue-on-error: true
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Show Plan
       if: github.event_name == 'pull_request'
@@ -64,3 +64,6 @@ jobs:
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
