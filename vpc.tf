@@ -1,16 +1,14 @@
 data "aws_availability_zones" "available" {}
 
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.5"
+  version = "5.5.2"
 
-  name = "VPC-${var.projectName}-app"
-  cidr = "10.0.0.0/16"
-
-  azs             = data.aws_availability_zones.available.names
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
-
+  name                 = "VPC-${var.projectName}"
+  cidr                 = "172.31.0.0/16"
+  azs                  = slice(data.aws_availability_zones.available.names, 0, 3)
+  public_subnets       = ["172.31.80.0/20", "172.31.16.0/20", "172.31.32.0/20"]
   enable_dns_hostnames = true
   enable_dns_support   = true
   single_nat_gateway   = true
@@ -20,10 +18,28 @@ module "vpc" {
     "kubernetes.io/role/elb" = 1
   }
 
+
   # Necessário no Kubernetes
-  private_subnet_tags = {
-    "kubernetes.io/role/internal-elb" = 1
+  public_subnet_tags = {
+    "kubernetes.io/cluster/cluster-eks-${var.projectName}}" = "shared"
+    "kubernetes.io/role/elb"                                = "1"
   }
   map_public_ip_on_launch = true
 }
 
+module "vpc_cni_irsa" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 4.12"
+
+  role_name_prefix      = "VPC-CNI-IRSA"
+  attach_vpc_cni_policy = true
+  vpc_cni_enable_ipv6   = true
+
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:aws-node"]
+    }
+  }
+
+}
