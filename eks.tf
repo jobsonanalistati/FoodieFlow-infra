@@ -1,3 +1,7 @@
+data "aws_secretsmanager_secret" "foodieFlow" {
+  name = "foodieFlow"
+}
+
 resource "aws_iam_policy" "secretsmanager_getsecretvalue" {
   name        = "secretsmanager_getsecretvalue"
   description = "Permite a ação secretsmanager:GetSecretValue"
