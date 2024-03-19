@@ -92,7 +92,7 @@ resource "helm_release" "secrets-provider-aws" {
   ]
 }
 
-resource "kubernetesnamespacev1" "foodieflownamespace" {
+resource "kubernetes_namespace_v1" "foodieflownamespace" {
   metadata {
     name = "foodieflownamespace"
   }
