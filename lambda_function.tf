@@ -1,5 +1,5 @@
-resource "aws_lambda_function" "tfer--create-002D-auth-002D-challenge" {
-  s3_bucket     = "lambda-foodieflow"
+resource "aws_lambda_function" "tfer--create-002D-auth-002D-challeng3e" {
+  s3_bucket     = "lambda-foodieflow-service"
   s3_key        = "create-auth-challenge-9c5f29cd-001c-4fb3-b71a-9ef9037004ee.zip"
   architectures = ["x86_64"]
 
@@ -30,7 +30,7 @@ resource "aws_lambda_function" "tfer--create-002D-auth-002D-challenge" {
 }
 
 resource "aws_lambda_function" "tfer--define-002D-auth-002D-challenge" {
-  s3_bucket     = "lambda-foodieflow"
+  s3_bucket     = "lambda-foodieflow-service"
   s3_key        = "define-auth-challenge-c59f32d6-215c-45fc-8613-3dfb836d627b.zip"
   architectures = ["x86_64"]
 
@@ -61,7 +61,7 @@ resource "aws_lambda_function" "tfer--define-002D-auth-002D-challenge" {
 }
 
 resource "aws_lambda_function" "tfer--jwt-002D-validator" {
-  s3_bucket     = "lambda-foodieflow"
+  s3_bucket     = "lambda-foodieflow-service"
   s3_key        = "jwt-validator-3b16b3a5-cce1-4a6e-87c0-b833260b8fad.zip"
   architectures = ["x86_64"]
 
@@ -92,7 +92,7 @@ resource "aws_lambda_function" "tfer--jwt-002D-validator" {
 }
 
 resource "aws_lambda_function" "tfer--pre-002D-signup-002D-new" {
-  s3_bucket     = "lambda-foodieflow"
+  s3_bucket     = "lambda-foodieflow-service"
   s3_key        = "pre-signup-new-42ae4e8d-270e-4ccd-bf8c-0bbdf3119675.zip"
   architectures = ["x86_64"]
 
@@ -124,7 +124,7 @@ resource "aws_lambda_function" "tfer--pre-002D-signup-002D-new" {
 }
 
 resource "aws_lambda_function" "tfer--verify-002D-auth-002D-challenge" {
-  s3_bucket     = "lambda-foodieflow"
+  s3_bucket     = "lambda-foodieflow-service"
   s3_key        = "verify-auth-challenge-f524a303-99f2-49a2-a576-5f3bdc727364.zip"
   architectures = ["x86_64"]
 
