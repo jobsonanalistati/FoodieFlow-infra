@@ -114,7 +114,7 @@ resource "helm_release" "secrets-provider-aws" {
 }
 
 # Recurso Kubernetes para criar um namespace
-resource "kubernetes_namespace_v2" "foodieflownamespace" {
+resource "kubernetes_namespace_v1" "foodieflownamespace" {
   metadata {
     name = "foodieflownamespace"
   }

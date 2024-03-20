@@ -1,9 +1,9 @@
 output "aws_cognito_user_pool_tfer--foodieflow_id" {
   value = aws_cognito_user_pool.tfer--foodieflow.id
 }
-output "aws_lambda_function_tfer--create-002D-auth-002D-challenge_id" {
-  value = aws_lambda_function.tfer--create-002D-auth-002D-challenge.id
-}
+#output "aws_lambda_function_tfer--create-002D-auth-002D-challenge_id" {
+#  value = aws_lambda_function.tfer--create-002D-auth-002D-challenge.id
+#}
 
 output "aws_lambda_function_tfer--define-002D-auth-002D-challenge_id" {
   value = aws_lambda_function.tfer--define-002D-auth-002D-challenge.id
